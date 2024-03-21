@@ -4,7 +4,7 @@
  * 
  * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Response/json_static)
  * 
- * @param {import('pijo').ProblemInstance} data
+ * @param {import('pijoy').ProblemInstance} data
  * @param {ResponseInit} [init]
  * @returns {Response}
  */

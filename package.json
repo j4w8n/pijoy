@@ -1,9 +1,9 @@
 {
-  "name": "pijo",
+  "name": "pijoy",
   "version": "0.1.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/j4w8n/pijo.git"
+    "url": "git+https://github.com/j4w8n/pijoy.git"
   },
   "devDependencies": {
     "typescript": "^5.0.0"
@@ -15,11 +15,11 @@
     }
   },
   "bugs": {
-    "url": "https://github.com/j4w8n/pijo/issues"
+    "url": "https://github.com/j4w8n/pijoy/issues"
   },
   "description": "Create standardized JSON objects for API error responses, per RFC 9457.",
   "files": ["src", "types"],
-  "hompage": "https://github.com/j4w8n/pijo#readme",
+  "hompage": "https://github.com/j4w8n/pijoy#readme",
   "keywords": ["problem", "detail", "http", "api", "json", "response", "rfc", "9457"],
   "license": "MIT",
   "scripts": {

@@ -1,10 +1,12 @@
-# pijo
+# pijoy
 
 Create standardized Javascript objects for API error responses, per [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457).
 
-Pronounced "Pie Jo", the name is an acronym for _Problem Instance Javascript Object_. I took some poetic license from the RFC verbiage "problem details", to arrive at "problem instance".
+Pronounced "Pie Joy", the name is an acronym for _Problem Instance Javascript Object Yo!_. I took some poetic license from the RFC verbiage "problem details", to arrive at "problem instance".
 
-"problem details" - One or more Javascript object key/value pairs, that provide details about API request errors. Some, or all, of which are be defined by RFC 9457.
+> The original name was "pijo", but the NPM registry rejected that on the basis it was too much like the existing package "pino". Good. I already have another package that ends in y for "yo!".
+
+"problem details" - One or more Javascript object key/value pairs, that provide details about API request errors. Some, or all, of which are defined by RFC 9457.
 
 "problem instance" - A Javascript object consisting of problem details.
 
@@ -22,23 +24,23 @@ For example, consider a response indicating that the client's account doesn't ha
 
 ## Install
 
-`npm install pijo`
+`npm install pijoy`
 
 ## Usage
 
 The defined [members](https://www.rfc-editor.org/rfc/rfc9457#name-members-of-a-problem-detail) of a problem instance are `type`, `status`, `title`, `detail`, and `instance`. The rest are [extension members](https://www.rfc-editor.org/rfc/rfc9457#name-extension-members), whose names you define.
 
-The Content-Type for responses must be `application/problem+json`; which is set in the pijo `json` function, if you choose to use it.
+The Content-Type for responses must be `application/problem+json`; which is set in the pijoy `json` function, if you choose to use it.
 
 ### Minimal Example
 ```js
-import { problem, json } from "pijo"
+import { problem, json } from "pijoy"
 
 /* Create a Problem Instance */
-const pijo = problem({ status: 403 })
+const pijoy = problem({ status: 403 })
 
 /* Return a JSON response with headers */
-return json(pijo)
+return json(pijoy)
 ```
 ```json
 /* Returned JSON object */
@@ -51,7 +53,7 @@ return json(pijo)
 
 ### Real-World-ish Example
 ```js
-import { problem, json } from "pijo"
+import { problem, json } from "pijoy"
 
 /* API endpoint to purchase a product */
 export const POST = async ({ request }) => {
@@ -60,11 +62,11 @@ export const POST = async ({ request }) => {
   const { data, error } = await res.json()
 
   if (error) {
-    const pijo = createPijo(error)
-    return json({ data: null, error: pijo })
+    const pijoy = createPijoy(error)
+    return json({ data: null, error: pijoy })
   }
 
-  function createPijo(error) {
+  function createPijoy(error) {
     /* Assuming your database server returns these items */
     const { status, message, ...rest } = error
 
@@ -100,11 +102,11 @@ It's important to note that none of the RFC-defined members are required, but th
 
 > The below definitions are based on the RFC, but may contain different links and slightly different verbiage.
 
-[`type`](https://www.rfc-editor.org/rfc/rfc9457#name-type) - A string containing a [URI](https://www.rfc-editor.org/rfc/rfc3986.html#page-7) reference that identifies the problem type. If you pass in an HTTP status code to `status` that isn't defined in [RFC 9110](https://www.rfc-editor.org/rfc/rfc9110#name-status-codes), and don't also pass in this member, pijo sets `type` to "about:blank".
+[`type`](https://www.rfc-editor.org/rfc/rfc9457#name-type) - A string containing a [URI](https://www.rfc-editor.org/rfc/rfc3986.html#page-7) reference that identifies the problem type. If you pass in an HTTP status code to `status` that isn't defined in [RFC 9110](https://www.rfc-editor.org/rfc/rfc9110#name-status-codes), and don't also pass in this member, pijoy sets `type` to "about:blank".
 
 [`status`](https://www.rfc-editor.org/rfc/rfc9457#name-status) - A number indicating a valid [HTTP status code](https://www.rfc-editor.org/rfc/rfc9110#name-status-codes), for this occurrence of the problem. This member is only advisory, is used for the convenience of the consumer, and if present, must be used in the actual HTTP response.
 
-[`title`](https://www.rfc-editor.org/rfc/rfc9457#name-title) - A string containing a short, human-readable summary of the problem type. This member is only advisory. If you pass in a valid HTTP status code to `status`, that isn't defined in [RFC 9110](https://www.rfc-editor.org/rfc/rfc9110#name-status-codes), and don't also pass in this member, pijo sets `title` to "Unknown Error".
+[`title`](https://www.rfc-editor.org/rfc/rfc9457#name-title) - A string containing a short, human-readable summary of the problem type. This member is only advisory. If you pass in a valid HTTP status code to `status`, that isn't defined in [RFC 9110](https://www.rfc-editor.org/rfc/rfc9110#name-status-codes), and don't also pass in this member, pijoy sets `title` to "Unknown Error".
 
 [`detail`](https://www.rfc-editor.org/rfc/rfc9457#name-detail) - A string containing a human-readable explanation specific to this occurrence of the problem. This member, if present, ought to focus on helping the client correct the problem, rather than giving debugging information.
 

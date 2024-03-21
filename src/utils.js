@@ -1,6 +1,6 @@
 /**
  * 
- * @param {import("pijo").ProblemDetail} data 
+ * @param {import("pijoy").ProblemDetail} data 
  */
 export const validate = (data) => {
   const { status } = data

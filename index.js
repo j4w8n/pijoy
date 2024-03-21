@@ -7,15 +7,15 @@
 import { problem } from "./src/problem.js";
 import { json } from "./src/json.js";
 
-const pijo = problem({
+const pijoy = problem({
   status: 403,
   reason: 'LackOfCredit',
   balance: 30,
   account: [ 'account/12345' ]
 })
-console.log("Problem Instance", pijo, '\n')
+console.log("Problem Instance", pijoy, '\n')
 
-const res = json(pijo)
+const res = json(pijoy)
 console.log(res, '\n')
 
 console.log("Parsed JSON", await res.json(), '\n')

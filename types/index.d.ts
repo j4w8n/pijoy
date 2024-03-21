@@ -1,4 +1,4 @@
-declare module 'pijo' {
+declare module 'pijoy' {
   export type ProblemInstance = {
     type: string;
     status: HttpStatusCodes;
