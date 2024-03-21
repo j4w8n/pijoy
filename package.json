@@ -1,0 +1,31 @@
+{
+  "name": "pijo",
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/j4w8n/pijo.git"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "import": "./src/exports/index.js"
+    }
+  },
+  "bugs": {
+    "url": "https://github.com/j4w8n/pijo/issues"
+  },
+  "description": "Create standardized JSON objects for API error responses, per RFC 9457.",
+  "files": ["src", "types"],
+  "hompage": "https://github.com/j4w8n/pijo#readme",
+  "keywords": ["problem", "detail", "http", "api", "json", "response", "rfc", "9457"],
+  "license": "MIT",
+  "scripts": {
+    "bun": "bun index.js",
+    "node": "node index.js"
+  },
+  "type": "module",
+  "types": "types/indes.d.ts"
+}

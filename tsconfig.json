@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "checkJs": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "paths": {
+      "types": ["./src/types/internal.d.ts"]
+    },
+    "strict": true,
+    "target": "esnext"
+  },
+  "include": [ "src/**/*", "index.js", "types/index.d.ts" ]
+}
