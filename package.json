@@ -24,8 +24,6 @@
   "keywords": ["problem", "detail", "http", "api", "json", "response", "rfc", "9457"],
   "license": "MIT",
   "scripts": {
-    "bun": "bun index.js",
-    "node": "node index.js",
     "test": "vitest"
   },
   "type": "module",
