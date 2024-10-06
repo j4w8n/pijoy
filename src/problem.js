@@ -8,6 +8,9 @@ import { validate } from "./utils.js"
  * @returns {import("pijoy").ProblemInstance}
  */
 export const problem = (data) => {
+  if (!data)
+    throw new SyntaxError('Expected 1 argument for `problem`, but got 0.')
+
   const { status, type, title, detail, instance, ...rest } = data
 
   /* Ensure status exists and is valid. */
