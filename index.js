@@ -25,22 +25,22 @@ console.log('Problem Response', res, '\n')
 
 console.log('Parsed Problem Response', await res.json(), '\n')
 
-const seeds = [
+const instances = [
   {
-    status: 400,
-    type: '/path/blah',
+    status: 402,
+    type: 'https://example.com/errors/lack-of-credit',
     title: 'LackOfCredit',
     detail: 'You do not have enough credit in your account.'
   },
   {
     status: 403,
-    type: '/path/blah/blah',
-    title: 'UnauthorizedAccess',
-    detail: 'You do not have authorization.'
+    type: 'https://example.com/errors/not-authorized',
+    title: 'UnauthorizedAccountAccess',
+    detail: 'You do not have authorization to access this account.'
   }
 ]
 
-const prob = new Problem(seeds)
+const prob = new Problem(instances)
 
 const minp = prob.create('LackOfCredit')
 console.log('Minimum Seeded Problem Instance', minp, '\n')

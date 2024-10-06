@@ -1,14 +1,22 @@
 # pijoy
 
-Create standardized Javascript objects for API error responses, per [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457).
+Create standardized Javascript objects for API error responses, per [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457); which obsoletes [RFC 7807](https://www.rfc-editor.org/rfc/rfc7807)
 
-Pronounced "Pie Joy", the name is an acronym for _Problem Instance Javascript Object Yo!_. I took some poetic license from the RFC verbiage "problem details", to arrive at "problem instance".
+Pronounced "Pie Joy", the name is an acronym for _Problem Instance Javascript Object Yo!_.
 
-> The original name was "pijo", but the NPM registry rejected that on the basis it was too much like the existing package "pino". Good. I already have another package that ends in y for "yo!".
+## Why pijoy?
 
-"problem details" - One or more Javascript object key/value pairs, that provide details about API request errors. Some, or all, of which are defined by RFC 9457.
+- Easily create API error responses.
+- No need to come up with your own format.
+- Get started by just passing in an HTTP status code.
+- Customize with your own errors.
+- Interoperability with other systems that use the standard.
 
-"problem instance" - A Javascript object consisting of problem details.
+## Definitions
+
+"problem details" - A RFC-defined JSON format that provides actionable information about errors returned from an API.
+
+"problem instance" - A specific instance of a problem detail, with a few guaranteed pieces of information.
 
 ## RFC Explainer
 
@@ -28,65 +36,93 @@ For example, consider a response indicating that the client's account doesn't ha
 
 ## Usage
 
-The defined [members](https://www.rfc-editor.org/rfc/rfc9457#name-members-of-a-problem-detail) of a problem instance are `type`, `status`, `title`, `detail`, and `instance`. The rest are [extension members](https://www.rfc-editor.org/rfc/rfc9457#name-extension-members), whose names you define.
+The defined [members](https://www.rfc-editor.org/rfc/rfc9457#name-members-of-a-problem-detail) of a problem detail are `type`, `status`, `title`, `detail`, and `instance`. The rest are [extension members](https://www.rfc-editor.org/rfc/rfc9457#name-extension-members), whose names you define.
 
 The Content-Type for responses must be `application/problem+json`; which is set in the pijoy `json` function, if you choose to use it.
 
 ### Minimal Example
+Pijoy returns a problem instance based on the status code you pass in.
+
 ```js
 import { problem, json } from "pijoy"
 
-/* Create a Problem Instance */
-const pijoy = problem({ status: 403 })
+/* Create a Problem Instance. */
+const problem_instance = problem({ status: 403 })
 
-/* Return a JSON response with headers */
-return json(pijoy)
+/* Return a JSON response. */
+return json(problem_instance)
 ```
 
 ```json
 {
-  "type": "https://www.rfc-editor.org/rfc/rfc9110#name-403-forbidden",
   "status": 403,
+  "type": "https://www.rfc-editor.org/rfc/rfc9110#name-403-forbidden",
   "title": "Forbidden"
 }
 ```
 
-### Real-World-ish Example
+### Example with custom errors
+Use your own errors, and we will match against them using the `title`. Therefore, the title of each must be unique across all errors.
+
 ```js
-import { problem, json } from "pijoy"
+/* lib/errors.js */
 
-/* API endpoint to purchase a product */
+import { Problem } from "pijoy"
+
+const errors = [
+  {
+    status: 402,
+    type: "https://example.com/errors/lack-of-credit",
+    title: "LackOfCredit",
+    detail: "You do not have enough credit in your account."
+  },
+  {
+    status: 403,
+    type: "https://example.com/errors/unauthorized-account-access",
+    title: "UnauthorizedAccountAccess",
+    detail: "You do not have authorization to access this account."
+  },
+  {
+    status: 403,
+    type: "https://example.com/errors/unauthorized-credit",
+    title: "UnauthorizedCredit",
+    detail: "Credit authorization failed for payment method."
+  }
+]
+
+export const problem = new Problem(errors)
+```
+```js
+/* API endpoint to purchase a product. */
+import { problem } from "./lib/errors.js"
+import { json } from "pijoy"
+
 export const POST = async ({ request }) => {
-
-  const res = await fetch("http://db.example.com")
-  const { data, error } = await res.json()
+  const { data, error } = someFunctionorFetch(request)
 
   if (error) {
-    const pijoy = createPijoy(error)
-    return json({ data: null, error: pijoy })
+    /* Assumes `error` has a `name` property that matches the `title` of a custom error above. e.g. LackOfCredit */
+    /* If passing in additional details (optional), you'll want to destucture the property that would be used for the value of `instance`, if it exists. */ 
+    const { name, audit_log_path, ...rest } = error
+
+    const problem_instance = problem.create(name, {
+      instance: audit_log_path,
+      ...rest
+     })
+
+    return json({ data: null, error: problem_instance })
   }
 
-  function createPijoy(error) {
-    /* Assuming your database server returns these items */
-    const { status, message, ...rest } = error
-
-    return problem({ 
-      status, // 403
-      detail: message, // "You do not have enough credit to purchase this item."
-      instance: request.url, // "https://example.com/product/1234"
-      ...rest // { reason: "LackOfCredit", balance: 30, cost: 50, accounts: [ "/account/12345", "/account/67890" ] }
-    })
-  }
+  ...
 }
 ```
 ```json
 {
-  "type": "https://www.rfc-editor.org/rfc/rfc9110#name-403-forbidden",
-  "status": 403,
-  "title": "Forbidden",
-  "detail": "You do not have enough credits to purchase this item.",
-  "instance": "http://example.com/product/1234",
-  "reason": "LackOfCredit",
+  "status": 402,
+  "type": "https://example.com/errors/lack-of-credit",
+  "title": "LackOfCredit",
+  "detail": "You do not have enough credit in your account.",
+  "instance": "https://site.example/logs/audit/135082985",
   "balance": 30,
   "cost": 50,
   "accounts": [ "/account/12345", "/account/67890" ]
@@ -97,13 +133,13 @@ export const POST = async ({ request }) => {
 
 ### Problem Detail Members
 
-It's important to note that none of the RFC-defined members are required, but this library ensures that `type`, `status`, and `title` are all present within a problem instance.
+It's important to note that none of the RFC-defined members are required, but this library ensures that `type`, `status`, and `title` are all present within a problem instance. If you use your own errors, each one must define a value for these three properties.
 
 > The below definitions are based on the RFC, but may contain different links and slightly different verbiage.
 
-[`type`](https://www.rfc-editor.org/rfc/rfc9457#name-type) - A string containing a [URI](https://www.rfc-editor.org/rfc/rfc3986.html#page-7) reference that identifies the problem type. If you pass in an HTTP status code to `status` that isn't defined in [RFC 9110](https://www.rfc-editor.org/rfc/rfc9110#name-status-codes), and don't also pass in this member, pijoy sets `type` to "about:blank".
-
 [`status`](https://www.rfc-editor.org/rfc/rfc9457#name-status) - A number indicating a valid [HTTP status code](https://www.rfc-editor.org/rfc/rfc9110#name-status-codes), for this occurrence of the problem. This member is only advisory, is used for the convenience of the consumer, and if present, must be used in the actual HTTP response.
+
+[`type`](https://www.rfc-editor.org/rfc/rfc9457#name-type) - A string containing a [URI](https://www.rfc-editor.org/rfc/rfc3986.html#page-7) reference that identifies the problem type. If you pass in an HTTP status code to `status` that isn't defined in [RFC 9110](https://www.rfc-editor.org/rfc/rfc9110#name-status-codes), and don't also pass in this member, pijoy sets `type` to "about:blank".
 
 [`title`](https://www.rfc-editor.org/rfc/rfc9457#name-title) - A string containing a short, human-readable summary of the problem type. This member is only advisory. If you pass in a valid HTTP status code to `status`, that isn't defined in [RFC 9110](https://www.rfc-editor.org/rfc/rfc9110#name-status-codes), and don't also pass in this member, pijoy sets `title` to "Unknown Error".
 
@@ -111,16 +147,10 @@ It's important to note that none of the RFC-defined members are required, but th
 
 [`instance`](https://www.rfc-editor.org/rfc/rfc9457#name-instance) - A string containing a [URI](https://www.rfc-editor.org/rfc/rfc3986.html#page-7) reference that identifies this specific occurrence of the problem. This is typically a path to a log or other audit trail for debugging, and it is recommended to be an absolute URI.
 
-### Library Functions
-
-> `HttpStatusCodes` is a number range between 100-599. `[key:string]: any` implies any number of additional [extension members](https://www.rfc-editor.org/rfc/rfc9457#name-extension-members) you wish to include.
-
-`problem()` - Create a Problem Instance.
+### Types
 ```ts
-function problem(data: ProblemDetail): ProblemInstance
-
-ProblemDetail = {
-  status: HttpStatusCodes;
+type ProblemDetail = {
+  status?: number;
   type?: string;
   title?: string;
   detail?: string;
@@ -128,9 +158,9 @@ ProblemDetail = {
   [key:string]: any;
 }
 
-ProblemInstance = {
+type ProblemInstance = {
+  status: number;
   type: string;
-  status: HttpStatusCodes;
   title: string;
   detail?: string;
   instance?: string;
@@ -138,16 +168,15 @@ ProblemInstance = {
 }
 ```
 
+## Library Functions
+
+`problem()` - Create a Problem Instance.
+```ts
+/* At a minimum, an HTTP status must be passed in. */
+function problem(data: ProblemDetail & { status: number }): ProblemInstance
+```
+
 `json()` - Create a [Response](https://developer.mozilla.org/en-US/docs/Web/API/Response). This includes a `Content-Type` header set to `application/problem+json`, and also a `Content-Length` header.
 ```ts
 function json(data: ProblemInstance): Response
-
-ProblemInstance = {
-  type: string;
-  status: HttpStatusCodes;
-  title: string;
-  detail?: string;
-  instance?: string;
-  [key:string]: any;
-}
 ```
