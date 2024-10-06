@@ -36,7 +36,7 @@ export const problem = (data) => {
 }
 
 /**
- * Create a Problem factory, based on custom Problem Instances.
+ * Create a Problem factory, from custom Problem Instances.
  */
 export class Problem {
   /**

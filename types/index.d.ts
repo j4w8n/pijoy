@@ -26,15 +26,15 @@ declare module 'pijoy' {
   export function json(data: ProblemInstance, init?: ResponseInit): Response
 
   /**
-   * Create a Problem Instance.
+   * Create a Problem Instance from Problem Detail.
    */
   export function problem(data: ProblemDetail & { status: number }): ProblemInstance
 
   /**
-   * Create a Problem class, from custom Problem Instances.
+   * Create a Problem factory, from custom Problem Instances.
    */
   export class Problem {
-    constructor(seeds: ProblemInstance[])
-    create(title: string, additional?: ProblemDetail): ProblemInstance
+    constructor(instances: ProblemInstance[])
+    create(title: string, detail?: ProblemDetail): ProblemInstance
   }
 }
