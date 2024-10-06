@@ -168,7 +168,7 @@ type ProblemInstance = {
 }
 ```
 
-## Library Functions
+## API
 
 `problem()` - Create a Problem Instance.
 ```ts
@@ -179,4 +179,10 @@ function problem(data: ProblemDetail & { status: number }): ProblemInstance
 `json()` - Create a [Response](https://developer.mozilla.org/en-US/docs/Web/API/Response). This includes a `Content-Type` header set to `application/problem+json`, and also a `Content-Length` header.
 ```ts
 function json(data: ProblemInstance): Response
+```
+
+`Problem` - Create a Problem factory. It's recommended to export `problem` from a file, where you can import it into other files to create instances. `errors` is of type `ProblemInstance[]`, and `title` is a `string`.
+```ts
+const problem = new Problem(errors)
+const instance = problem.create(title)
 ```
