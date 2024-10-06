@@ -8,15 +8,20 @@ import { validate } from "./utils.js"
  * @returns {import("pijoy").ProblemInstance}
  */
 export const problem = (data) => {
-  validate(data)
-
-  const { status, ...rest } = data
+  const { status, type, title, detail, instance, ...rest } = data
   const code = http_codes.find(c => c.status === status) ?? { type: 'about:blank', title: 'Unknown Error' }
 
-  return {
-    type: code.type,
+  /**
+   * @type {import("pijoy").ProblemInstance}
+   */
+  const problem_instance = {
     status,
-    title: code.title,
+    type: type ?? code.type,
+    title: title ?? code.title,
+    detail,
+    instance,
     ...rest
   }
+
+  return validate(problem_instance)
 }

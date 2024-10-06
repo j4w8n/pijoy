@@ -1,20 +1,23 @@
 /**
  * 
- * @param {import("pijoy").ProblemDetail} data 
+ * @param {import("pijoy").ProblemInstance} data 
+ * @returns {import("pijoy").ProblemInstance}
  */
 export const validate = (data) => {
-  const { status } = data
-  const keys_to_check = [ 'type', 'title', 'detail', 'instance' ]
+  const members_to_check = new Set([ 'type', 'title', 'detail', 'instance' ])
 
-  if (!status) throw new Error('Member `status` must be passed into `problem()`.')
-  if (typeof status !== 'number') throw new Error('Member `status` must be a number.')
-  if (status < 100 || status > 599) throw new Error('Member `status` must be a number in the range of 100-599.')
+  if (!data.status) throw new Error('Member `status` must be passed into `problem()`.')
+  if (typeof data.status !== 'number') throw new Error('Member `status` must be a number.')
+  if (data.status < 100 || data.status > 599) throw new Error('Member `status` must be a number in the range of 100-599.')
 
-  /** If `keys_to_check` members are present in `data`,
-   * ensure their values are of type `string`.
+  /**
+   * Per spec, ignore values that do not match the specified type.
+   * Also, do not return keys whose value is `undefined`.
    */
   for (const [key, value] of Object.entries(data)) {
-    if (keys_to_check.find(k => k === key) && typeof value !== 'string')
-      throw new Error(`Member ${key} must be a string.`)
+    if ((members_to_check.has(key) && typeof value !== 'string') || value === undefined)
+      delete data[key]
   }
+
+  return data
 }

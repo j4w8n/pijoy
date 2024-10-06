@@ -42,8 +42,9 @@ const pijoy = problem({ status: 403 })
 /* Return a JSON response with headers */
 return json(pijoy)
 ```
+
 ```json
-/* Returned JSON object */
+// Returned JSON object
 {
   "type": "https://www.rfc-editor.org/rfc/rfc9110#name-403-forbidden",
   "status": 403,
@@ -80,7 +81,7 @@ export const POST = async ({ request }) => {
 }
 ```
 ```json
-/* Returned JSON object to client */
+// Returned JSON object to client
 {
   "type": "https://www.rfc-editor.org/rfc/rfc9110#name-403-forbidden",
   "status": 403,
