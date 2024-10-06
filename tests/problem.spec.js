@@ -12,8 +12,21 @@ test('Create simple problem instance', () => {
   )
 })
 
-test('To throw error for not passing in `status`', () => {
-  expect(problem()).toThrowError('Member `status` must be passed into `problem()`.')
+test('Throw SyntaxError for not passing in an argument to `problem()`', () => {
+  expect(() => problem()).toThrowError('Expected 1 argument for `problem`, but got 0.')
+})
+
+test('Throw TypeError for not passing in `status` to `problem()`', () => {
+  expect(() => problem({})).toThrowError('Member `status` must be passed into `problem()`.')
+})
+
+test('Throw TypeError for `status` not being a number', () => {
+  expect(() => problem({ status: 'dud' })).toThrowError('Member `status` must be a number.')
+})
+
+test('Throw TypeError for `status` not being a number between 100 and 599', () => {
+  expect(() => problem({ status: 99 })).toThrowError('Member `status` must be a number in the range of 100-599.')
+  expect(() => problem({ status: 600 })).toThrowError('Member `status` must be a number in the range of 100-599.')
 })
 
 test('Create problem instances from custom errors', () => {
@@ -68,5 +81,3 @@ test('Create problem instances from custom errors', () => {
     }
   )
 })
-
-test('')
