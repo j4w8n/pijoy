@@ -1,8 +1,8 @@
-import { http_codes } from "./http_codes.js"
+import { error_instances } from "./instances.js"
 import { validate } from "./utils.js"
 
 /**
- * Create a Problem Instance.
+ * Create a Problem Instance from Problem Detail.
  * 
  * @param {import("pijoy").ProblemDetail & { status: number }} data 
  * @returns {import("pijoy").ProblemInstance}
@@ -15,7 +15,7 @@ export const problem = (data) => {
   if (typeof status !== 'number') throw new TypeError('Member `status` must be a number.')
   if (status < 100 || status > 599) throw new TypeError('Member `status` must be a number in the range of 100-599.')
   
-  const code = http_codes.find(c => c.status === status) ?? { type: 'about:blank', title: 'Unknown Error' }
+  const code = error_instances.find(i => i.status === status) ?? { type: 'about:blank', title: 'Unknown Error' }
 
   /**
    * @type {import("pijoy").ProblemInstance}
@@ -33,24 +33,22 @@ export const problem = (data) => {
 }
 
 /**
- * Create a Problem class.
- * 
- * Requires an array of problem types.
+ * Create a Problem factory, based on custom Problem Instances.
  */
 export class Problem {
   /**
    * 
-   * @param {import('pijoy').ProblemInstance[]} seeds
+   * @param {import('pijoy').ProblemInstance[]} instances
    */
-  constructor(seeds) {
-    if (!Array.isArray(seeds))
-      throw new TypeError('Seeds must be an array.')
-    if (seeds.length === 0)
-      throw new Error('Seeds array must have at least one element.')
-    if (!seeds.every(e => e.status && e.type && e.title))
-      throw new TypeError('All seeds must be of type ProblemInstance, with a `status`, `type`, and `title`.')
+  constructor(instances) {
+    if (!Array.isArray(instances))
+      throw new TypeError('Instances must be an array.')
+    if (instances.length === 0)
+      throw new Error('Instances array must have at least one element.')
+    if (!instances.every(e => e.status && e.type && e.title))
+      throw new TypeError('All instances must be of type ProblemInstance, with a `status`, `type`, and `title`.')
 
-    this.seeds = seeds
+    this.instances = instances
   }
 
   /**
@@ -68,11 +66,12 @@ export class Problem {
     if (detail?.title)
       console.info('Found `title` in detail. This will override your passed-in `title`. Did you mean to do this?')
 
-    const pi = this.seeds.find(s => s.title === title) ?? { status: 400, type: 'about:blank', title }
-
-    return {
-      ...pi,
+    const instance = this.instances.find(i => i.title === title) ?? { status: 400, type: 'about:blank', title }
+    const problem_instance = {
+      ...instance,
       ...detail
     }
+
+    return validate(problem_instance)
   }
 }

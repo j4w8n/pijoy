@@ -11,7 +11,10 @@ const getType = (status, title) => {
   return `${rfc_url}${status}-${title.replace(' ', '-').toLocaleLowerCase()}`
 }
 
-export const http_codes = [
+/**
+ * @type {import("pijoy").ProblemInstance[]}
+ */
+export const error_instances = [
   {
     status: 400,
     title: 'Bad Request',
