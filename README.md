@@ -111,7 +111,7 @@ It's important to note that none of the RFC-defined members are required, but th
 
 [`detail`](https://www.rfc-editor.org/rfc/rfc9457#name-detail) - A string containing a human-readable explanation specific to this occurrence of the problem. This member, if present, ought to focus on helping the client correct the problem, rather than giving debugging information.
 
-[`instance`](https://www.rfc-editor.org/rfc/rfc9457#name-instance) - A string containing a [URI](https://www.rfc-editor.org/rfc/rfc3986.html#page-7) reference that identifies the specific occurrence of the problem. This is typically the API endpoint, and it is recommended to be an absolute URI.
+[`instance`](https://www.rfc-editor.org/rfc/rfc9457#name-instance) - A string containing a [URI](https://www.rfc-editor.org/rfc/rfc3986.html#page-7) reference that identifies this specific occurrence of the problem. This is typically a path to a log or other audit trail for debugging, and it is recommended to be an absolute URI.
 
 ### Library Functions
 
