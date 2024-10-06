@@ -44,7 +44,6 @@ return json(pijoy)
 ```
 
 ```json
-// Returned JSON object
 {
   "type": "https://www.rfc-editor.org/rfc/rfc9110#name-403-forbidden",
   "status": 403,
@@ -81,7 +80,6 @@ export const POST = async ({ request }) => {
 }
 ```
 ```json
-// Returned JSON object to client
 {
   "type": "https://www.rfc-editor.org/rfc/rfc9110#name-403-forbidden",
   "status": 403,
