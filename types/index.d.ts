@@ -9,7 +9,7 @@ declare module 'pijoy' {
   }
 
   export type ProblemDetail = {
-    status: number;
+    status?: number;
     type?: string;
     title?: string;
     detail?: string;
@@ -28,5 +28,13 @@ declare module 'pijoy' {
   /**
    * Create a Problem Instance.
    */
-  export function problem(data: ProblemDetail): ProblemInstance
+  export function problem(data: ProblemDetail & { status: number }): ProblemInstance
+
+  /**
+   * Create a Problem class, from custom Problem Instances.
+   */
+  export class Problem {
+    constructor(seeds: ProblemInstance[])
+    create(title: string, additional?: ProblemDetail): ProblemInstance
+  }
 }
