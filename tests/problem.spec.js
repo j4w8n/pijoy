@@ -1,6 +1,5 @@
 import { expect, test } from "vitest"
 import { problem, Problem } from "../src/problem.js"
-import { json } from "../src/json.js"
 
 test('Create simple problem instance', () => {
   expect(problem({ status: 400 })).toStrictEqual(
