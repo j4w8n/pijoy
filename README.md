@@ -14,7 +14,7 @@ Pronounced "Pie Joy", the name is an acronym for _Problem Instance Javascript Ob
 
 ## Definitions
 
-"problem details" - A RFC-defined JSON format that provides actionable information about errors returned from an API.
+"problem details" - An RFC-defined JSON format that provides actionable information about errors returned from an API.
 
 "problem instance" - A specific instance of a problem detail, with a few guaranteed pieces of information.
 
