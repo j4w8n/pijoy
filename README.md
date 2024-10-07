@@ -110,7 +110,7 @@ export const POST = async ({ request }) => {
       ...rest
      })
 
-    return json({ data: null, error: problem_instance })
+    return json(problem_instance)
   }
 
   ...
