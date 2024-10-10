@@ -1,8 +1,8 @@
 import { expect, test } from "vitest"
-import { problem, Problem } from "../src/problem.js"
+import { pijoy, Pijoy } from "../src/problem.js"
 
 test('Create problem instance from status', () => {
-  expect(problem(400)).toStrictEqual(
+  expect(pijoy(400)).toStrictEqual(
     {
       status: 400,
       type: "https://www.rfc-editor.org/rfc/rfc9110#name-400-bad-request",
@@ -12,7 +12,7 @@ test('Create problem instance from status', () => {
 })
 
 test('Create problem instances from json', () => {
-  expect(problem(402, {
+  expect(pijoy(402, {
     type: "https://example.com/errors/lack-of-credit",
     title: "LackOfCredit",
     detail: "You do not have enough credit in your account.",
@@ -32,7 +32,7 @@ test('Create problem instances from json', () => {
       accounts: [ "/account/12345", "/account/67890" ]
     }
   )
-  expect(problem(420, {
+  expect(pijoy(420, {
     instance: "https://site.example/logs/audit/135082985"
   })).toStrictEqual(
     {
@@ -42,7 +42,7 @@ test('Create problem instances from json', () => {
       instance: "https://site.example/logs/audit/135082985"
     }
   )
-  expect(problem(420, {
+  expect(pijoy(420, {
     title: "LackOfCredit",
     balance: 30,
     cost: 50,
@@ -59,26 +59,26 @@ test('Create problem instances from json', () => {
   )
 })
 
-test('Throw SyntaxError for not passing in an argument to `problem()`', () => {
-  expect(() => problem()).toThrowError('A status must be passed in to `problem`.')
+test('Throw SyntaxError for not passing in an argument to `pijoy()`', () => {
+  expect(() => pijoy()).toThrowError('A status must be passed in to `pijoy`.')
 })
 
-test('Throw SyntaxError for not passing in errors to `new Problem()`', () => {
-  expect(() => new Problem()).toThrowError('Expected 1 argument for `Problem`, but got 0.')
+test('Throw SyntaxError for not passing in errors to `new Pijoy()`', () => {
+  expect(() => new Pijoy()).toThrowError('Expected 1 argument for `Pijoy`, but got 0.')
 })
 
 test('Throw TypeError for `status` not being a number', () => {
-  expect(() => problem({ status: 'dud' })).toThrowError('Member `status` must be a number.')
+  expect(() => pijoy({ status: 'dud' })).toThrowError('Member `status` must be a number.')
 })
 
 test('Throw TypeError for `status` not being a number between 100 and 599', () => {
-  expect(() => problem(99)).toThrowError('Member `status` must be a number in the range of 100-599.')
-  expect(() => problem(600)).toThrowError('Member `status` must be a number in the range of 100-599.')
+  expect(() => pijoy(99)).toThrowError('Member `status` must be a number in the range of 100-599.')
+  expect(() => pijoy(600)).toThrowError('Member `status` must be a number in the range of 100-599.')
 })
 
 /* Some property names intentially have single or double quotes. */
 
-const problems = new Problem([
+const Problem = new Pijoy([
   {
     "status": 402,
     type: "https://example.com/errors/lack-of-credit",
@@ -105,7 +105,7 @@ const details = {
 }
 
 test('Create problem instances from custom errors', () => {
-  expect(problems.create('LackOfCredit', { ...details })).toStrictEqual(
+  expect(Problem.create('LackOfCredit', { ...details })).toStrictEqual(
     {
       status: 402,
       type: "https://example.com/errors/lack-of-credit",
@@ -117,7 +117,7 @@ test('Create problem instances from custom errors', () => {
       "accounts": [ "/account/12345", "/account/67890" ]
     }
   )
-  expect(problems.create('UnauthorizedAccountAccess', { ...details })).toStrictEqual(
+  expect(Problem.create('UnauthorizedAccountAccess', { ...details })).toStrictEqual(
     {
       status: 403,
       "type": "https://example.com/errors/unauthorized-account-access",
@@ -129,7 +129,7 @@ test('Create problem instances from custom errors', () => {
       accounts: [ "/account/12345", "/account/67890" ]
     }
   )
-  expect(problems.create('UnauthorizedCredit')).toStrictEqual(
+  expect(Problem.create('UnauthorizedCredit')).toStrictEqual(
     {
       "status": 403,
       type: "https://www.rfc-editor.org/rfc/rfc9110#name-403-forbidden",
@@ -137,7 +137,7 @@ test('Create problem instances from custom errors', () => {
       detail: "Credit authorization failed for payment method."
     }
   )
-  expect(problems.create('Unknown', { instance: "https://site.example/logs/audit/135082985" })).toStrictEqual(
+  expect(Problem.create('Unknown', { instance: "https://site.example/logs/audit/135082985" })).toStrictEqual(
     {
       status: 400,
       type: "https://www.rfc-editor.org/rfc/rfc9110#name-400-bad-request",
@@ -145,7 +145,7 @@ test('Create problem instances from custom errors', () => {
       'instance': "https://site.example/logs/audit/135082985"
     }
   )
-  expect(problems.create('CustomError', { status: 420, instance: "https://site.example/logs/audit/135082985" })).toStrictEqual(
+  expect(Problem.create('CustomError', { status: 420, instance: "https://site.example/logs/audit/135082985" })).toStrictEqual(
     {
       status: 420,
       type: "about:blank",
@@ -156,9 +156,9 @@ test('Create problem instances from custom errors', () => {
 })
 
 test('Throw TypeError for `title` not being a string', () => {
-  expect(() => problems.create(1)).toThrowError('Title must be a string.')
+  expect(() => Problem.create(1)).toThrowError('Title must be a string.')
 })
 
 test('Throw TypeError for `details` not being an object', () => {
-  expect(() => problems.create('Error', 'Bad')).toThrowError('Passed-in details must be an object.')
+  expect(() => Problem.create('Error', 'Bad')).toThrowError('Passed-in details must be an object.')
 })

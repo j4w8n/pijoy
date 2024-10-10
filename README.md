@@ -44,21 +44,22 @@ The Content-Type for responses must be `application/problem+json`; which is set 
 Pijoy returns a problem instance based on the status code you pass in.
 
 ```js
-import { problem, json } from "pijoy"
+import { pijoy, problem } from "pijoy"
 
 /* Create a Problem Instance. */
-const problem_instance = problem(403)
+const instance = pijoy(403)
 
-/* Return a JSON response. */
-return json(problem_instance)
-```
+/*
+  instance:
+  {
+    "status": 403,
+    "type": "https://www.rfc-editor.org/rfc/rfc9110#name-403-forbidden",
+    "title": "Forbidden"
+  }
+*/
 
-```json
-{
-  "status": 403,
-  "type": "https://www.rfc-editor.org/rfc/rfc9110#name-403-forbidden",
-  "title": "Forbidden"
-}
+/* Return an 'application/problem+json' JSON response. */
+return problem(instance)
 ```
 
 ### Example with custom errors
@@ -66,8 +67,7 @@ Use your own errors, and we will match against them using the `title`. Therefore
 
 ```js
 /* lib/errors.js */
-
-import { Problem } from "pijoy"
+import { Pijoy } from "pijoy"
 
 const problems = [
   {
@@ -90,12 +90,12 @@ const problems = [
   }
 ]
 
-export const problem = new Problem(problems)
+export const Problem = new Pijoy(problems)
 ```
 ```js
 /* API endpoint to purchase a product. */
-import { problem } from "./lib/errors.js"
-import { json } from "pijoy"
+import { Problem } from "./lib/errors.js"
+import { problem } from "pijoy"
 
 export const POST = async ({ request }) => {
   const { data, error } = someFunctionorFetch(request)
@@ -105,27 +105,31 @@ export const POST = async ({ request }) => {
     /* If passing in additional details (optional), you'll want to destucture the property that would be used for the value of `instance`, if it exists. */ 
     const { name, audit_log_path, ...rest } = error
 
-    const problem_instance = problem.create(name, {
+    const instance = Problem.create(name, {
       instance: audit_log_path,
       ...rest
      })
 
-    return json(problem_instance)
-  }
+    /*
+      instance:
+      {
+        "status": 402,
+        "type": "https://example.com/errors/lack-of-credit",
+        "title": "LackOfCredit",
+        "detail": "You do not have enough credit in your account.",
+        "instance": "https://site.example/logs/audit/135082985",
+        "balance": 30,
+        "cost": 50,
+        "accounts": [ "/account/12345", "/account/67890" ]
+      }
+    */
 
+
+    /* Return an 'application/problem+json' JSON response. */
+    return problem(instance)
+  }
+  
   ...
-}
-```
-```json
-{
-  "status": 402,
-  "type": "https://example.com/errors/lack-of-credit",
-  "title": "LackOfCredit",
-  "detail": "You do not have enough credit in your account.",
-  "instance": "https://site.example/logs/audit/135082985",
-  "balance": 30,
-  "cost": 50,
-  "accounts": [ "/account/12345", "/account/67890" ]
 }
 ```
 
@@ -170,24 +174,25 @@ type ProblemInstance = {
 
 ## API
 
-`problem()` - Create a Problem Instance.
+`problem()` - Create a problem JSON [Response](https://developer.mozilla.org/en-US/docs/Web/API/Response). This includes a `Content-Type` header set to `application/problem+json`, and also a `Content-Length` header.
+```ts
+function problem(data: ProblemInstance): Response
+```
+
+`pijoy()` - Create a Problem Instance.
 ```ts
 /* At a minimum, an HTTP status must be passed in. */
-function problem(status: number, details: ProblemDetail): ProblemInstance
+function pijoy(status: number, details: ProblemDetail): ProblemInstance
 ```
 
-`json()` - Create a [Response](https://developer.mozilla.org/en-US/docs/Web/API/Response). This includes a `Content-Type` header set to `application/problem+json`, and also a `Content-Length` header.
+`Pijoy` - Create a Problem Instance factory. It's recommended to export `Problem` from a file, where you can import it into other files where you'll create problem instances (see real-world example further above).
 ```ts
-function json(data: ProblemInstance): Response
-```
-
-`Problem` - Create a Problem factory. It's recommended to export `problem` from a file, where you can import it into other files to create instances.
-```ts
-class Problem {
+class Pijoy {
   constructor(problems: ProblemDetail<{ title: string; }>[])
   create(title: string, details?: ProblemDetail): ProblemInstance
 }
 
+/* At a minimum, each problem requires a `title`. All other properties are optional. */
 const problems = [
   {
     status: 402,
@@ -207,6 +212,6 @@ const problems = [
     detail: "Credit authorization failed for payment method."
   }
 ]
-const problem = new Problem(problems)
-const instance = problem.create(title)
+const Problem = new Pijoy(problems)
+const instance = Problem.create('LackOfCredit')
 ```

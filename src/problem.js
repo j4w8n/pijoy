@@ -10,7 +10,7 @@ import { validate } from "./utils.js"
  * @param {import("pijoy").ProblemDetail} [details] 
  * @returns {import("pijoy").ProblemInstance}
  */
-export const problem = (status, details) => {
+export const pijoy = (status, details) => {
   if (!status) 
     throw new SyntaxError('A status must be passed in to `problem`.')
   if (typeof status !== 'number') 
@@ -36,7 +36,7 @@ export const problem = (status, details) => {
  * 
  * Requires each Problem Detail to have a `title`.
  */
-export class Problem {
+export class Pijoy {
   /**
    * 
    * @param {import('pijoy').ProblemDetail[]} problems

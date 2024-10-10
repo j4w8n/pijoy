@@ -1,2 +1,2 @@
-export { json } from '../json.js'
-export { problem } from '../problem.js'
+export { problem } from '../helper.js'
+export { pijoy, Pijoy } from '../problem.js'
