@@ -6,29 +6,26 @@ import { validate } from "./utils.js"
  * 
  * Requires a `status` to be passed in.
  * 
- * @param {import("pijoy").ProblemDetail} data 
+ * @param {number} status
+ * @param {import("pijoy").ProblemDetail} [data] 
  * @returns {import("pijoy").ProblemInstance}
  */
-export const problem = (data) => {
-  if (!data)
-    throw new SyntaxError('Expected 1 argument for `problem`, but got 0.')
-
-  const { status, detail, instance, name, message, ...rest } = data
-
-  /* Ensure status exists and is valid. */
-  if (status && typeof status !== 'number') throw new TypeError('Member `status` must be a number.')
-  if (status && (status < 100 || status > 599)) throw new TypeError('Member `status` must be a number in the range of 100-599.')
+export const problem = (status, data) => {
+  if (!status) 
+    throw new SyntaxError('A status must be passed in to `problem`.')
+  if (typeof status !== 'number') 
+    throw new TypeError('Member `status` must be a number.')
+  if (status && (status < 100 || status > 599)) 
+    throw new TypeError('Member `status` must be a number in the range of 100-599.')
 
   /**
    * @type {import("pijoy").ProblemInstance}
    */
   const problem_instance = {
-    status: status ?? 400,
-    get type() { return error_instances.find(i => i.status === this.status)?.type ?? 'about:blank' },
-    get title() { return name ?? error_instances.find(i => i.status === this.status)?.title ?? 'Unknown Error' },
-    detail: detail ?? message,
-    instance,
-    ...rest
+    status,
+    get type() { return error_instances.find(i => i.status === status)?.type ?? 'about:blank' },
+    get title() { return error_instances.find(i => i.status === status)?.title ?? 'Unknown Error' },
+    ...data
   }
 
   return validate(problem_instance)

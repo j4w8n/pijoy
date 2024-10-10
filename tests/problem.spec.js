@@ -2,7 +2,7 @@ import { expect, test } from "vitest"
 import { problem, Problem } from "../src/problem.js"
 
 test('Create problem instance from status', () => {
-  expect(problem({ status: 400 })).toStrictEqual(
+  expect(problem(400)).toStrictEqual(
     {
       status: 400,
       type: "https://www.rfc-editor.org/rfc/rfc9110#name-400-bad-request",
@@ -12,8 +12,7 @@ test('Create problem instance from status', () => {
 })
 
 test('Create problem instances from json', () => {
-  expect(problem({
-    status: 402,
+  expect(problem(402, {
     type: "https://example.com/errors/lack-of-credit",
     title: "LackOfCredit",
     detail: "You do not have enough credit in your account.",
@@ -33,27 +32,7 @@ test('Create problem instances from json', () => {
       accounts: [ "/account/12345", "/account/67890" ]
     }
   )
-  expect(problem({
-    title: "LackOfCredit",
-    detail: "You do not have enough credit in your account.",
-    instance: "https://site.example/logs/audit/135082985",
-    balance: 30,
-    cost: 50,
-    accounts: [ "/account/12345", "/account/67890" ]
-  })).toStrictEqual(
-    {
-      status: 400,
-      type: "https://www.rfc-editor.org/rfc/rfc9110#name-400-bad-request",
-      title: "LackOfCredit",
-      detail: "You do not have enough credit in your account.",
-      instance: "https://site.example/logs/audit/135082985",
-      balance: 30,
-      cost: 50,
-      accounts: [ "/account/12345", "/account/67890" ]
-    }
-  )
-  expect(problem({
-    status: 420,
+  expect(problem(420, {
     instance: "https://site.example/logs/audit/135082985"
   })).toStrictEqual(
     {
@@ -63,8 +42,7 @@ test('Create problem instances from json', () => {
       instance: "https://site.example/logs/audit/135082985"
     }
   )
-  expect(problem({
-    status: 420,
+  expect(problem(420, {
     title: "LackOfCredit",
     balance: 30,
     cost: 50,
@@ -79,50 +57,10 @@ test('Create problem instances from json', () => {
       accounts: [ "/account/12345", "/account/67890" ]
     }
   )
-  expect(problem({
-    status: 402,
-    type: "https://example.com/errors/lack-of-credit",
-    name: "LackOfCredit",
-    message: "You do not have enough credit in your account.",
-    balance: 30,
-    cost: 50,
-    accounts: [ "/account/12345", "/account/67890" ]
-  })).toStrictEqual(
-    {
-      status: 402,
-      type: "https://example.com/errors/lack-of-credit",
-      title: "LackOfCredit",
-      detail: "You do not have enough credit in your account.",
-      balance: 30,
-      cost: 50,
-      accounts: [ "/account/12345", "/account/67890" ]
-    }
-  )
-  expect(problem({
-    status: 402,
-    type: "https://example.com/errors/lack-of-credit",
-    name: "LackOfCredit",
-    message: "You do not have enough credit in your account.",
-    title: "ShouldOverrideName",
-    detail: "ShouldOverrideMessage",
-    balance: 30,
-    cost: 50,
-    accounts: [ "/account/12345", "/account/67890" ]
-  })).toStrictEqual(
-    {
-      status: 402,
-      type: "https://example.com/errors/lack-of-credit",
-      title: "ShouldOverrideName",
-      detail: "ShouldOverrideMessage",
-      balance: 30,
-      cost: 50,
-      accounts: [ "/account/12345", "/account/67890" ]
-    }
-  )
 })
 
 test('Throw SyntaxError for not passing in an argument to `problem()`', () => {
-  expect(() => problem()).toThrowError('Expected 1 argument for `problem`, but got 0.')
+  expect(() => problem()).toThrowError('A status must be passed in to `problem`.')
 })
 
 test('Throw SyntaxError for not passing in errors to `new Problem()`', () => {
@@ -134,8 +72,8 @@ test('Throw TypeError for `status` not being a number', () => {
 })
 
 test('Throw TypeError for `status` not being a number between 100 and 599', () => {
-  expect(() => problem({ status: 99 })).toThrowError('Member `status` must be a number in the range of 100-599.')
-  expect(() => problem({ status: 600 })).toThrowError('Member `status` must be a number in the range of 100-599.')
+  expect(() => problem(99)).toThrowError('Member `status` must be a number in the range of 100-599.')
+  expect(() => problem(600)).toThrowError('Member `status` must be a number in the range of 100-599.')
 })
 
 /* Some property names intentially have single or double quotes. */
