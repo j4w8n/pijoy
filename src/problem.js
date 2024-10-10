@@ -65,7 +65,7 @@ export class Problem {
     if (typeof title !== 'string')
       throw new TypeError('Title must be a string.')
     if (details && typeof details !== 'object')
-      throw new TypeError('Passed-in detail must be an object.')
+      throw new TypeError('Passed-in details must be an object.')
 
     const problem = this.problems.find(p => p.title === title)
 

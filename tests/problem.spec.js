@@ -97,7 +97,7 @@ const problems = new Problem([
     detail: "Credit authorization failed for payment method."
   }
 ])
-const detail = {
+const details = {
   "instance": "https://site.example/logs/audit/135082985",
   'balance': 30,
   cost: 50,
@@ -105,7 +105,7 @@ const detail = {
 }
 
 test('Create problem instances from custom errors', () => {
-  expect(problems.create('LackOfCredit', { ...detail })).toStrictEqual(
+  expect(problems.create('LackOfCredit', { ...details })).toStrictEqual(
     {
       status: 402,
       type: "https://example.com/errors/lack-of-credit",
@@ -117,7 +117,7 @@ test('Create problem instances from custom errors', () => {
       "accounts": [ "/account/12345", "/account/67890" ]
     }
   )
-  expect(problems.create('UnauthorizedAccountAccess', { ...detail })).toStrictEqual(
+  expect(problems.create('UnauthorizedAccountAccess', { ...details })).toStrictEqual(
     {
       status: 403,
       "type": "https://example.com/errors/unauthorized-account-access",
@@ -159,6 +159,6 @@ test('Throw TypeError for `title` not being a string', () => {
   expect(() => problems.create(1)).toThrowError('Title must be a string.')
 })
 
-test('Throw TypeError for `data` not being an object', () => {
-  expect(() => problems.create('Error', 'Bad')).toThrowError('Passed-in data must be an object.')
+test('Throw TypeError for `details` not being an object', () => {
+  expect(() => problems.create('Error', 'Bad')).toThrowError('Passed-in details must be an object.')
 })
