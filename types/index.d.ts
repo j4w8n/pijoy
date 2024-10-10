@@ -8,14 +8,14 @@ declare module 'pijoy' {
     [key: string]: any;
   }
 
-  export type ProblemDetail = {
+  export type ProblemDetail<T = {}> = {
     status?: number;
     type?: string;
     title?: string;
     detail?: string;
     instance?: string;
     [key: string]: any;
-  }
+  } & T
 
   /**
    * Create a JSON `Response` using the Fetch API `Response.json()` static method.
@@ -27,14 +27,18 @@ declare module 'pijoy' {
 
   /**
    * Create a Problem Instance from Problem Detail.
+   * 
+   * Requires a `status` to be passed in.
    */
-  export function problem(data: ProblemDetail & { status: number }): ProblemInstance
+  export function problem(data: ProblemDetail): ProblemInstance
 
   /**
-   * Create a Problem factory, from custom Problem Instances.
+   * Create a Problem factory, from custom Problem Details.
+   * 
+   * Requires each Problem Detail to have a `title`.
    */
   export class Problem {
-    constructor(instances: ProblemInstance[])
+    constructor(details: ProblemDetail<{ title: string; }>[])
     create(title: string, detail?: ProblemDetail): ProblemInstance
   }
 }
