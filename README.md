@@ -47,7 +47,7 @@ Pijoy returns a problem instance based on the status code you pass in.
 import { problem, json } from "pijoy"
 
 /* Create a Problem Instance. */
-const problem_instance = problem({ status: 403 })
+const problem_instance = problem(403)
 
 /* Return a JSON response. */
 return json(problem_instance)
@@ -69,7 +69,7 @@ Use your own errors, and we will match against them using the `title`. Therefore
 
 import { Problem } from "pijoy"
 
-const errors = [
+const problems = [
   {
     status: 402,
     type: "https://example.com/errors/lack-of-credit",
@@ -90,7 +90,7 @@ const errors = [
   }
 ]
 
-export const problem = new Problem(errors)
+export const problem = new Problem(problems)
 ```
 ```js
 /* API endpoint to purchase a product. */
@@ -133,7 +133,7 @@ export const POST = async ({ request }) => {
 
 ### Problem Detail Members
 
-It's important to note that none of the RFC-defined members are required, but this library ensures that `type`, `status`, and `title` are all present within a problem instance. If you use your own errors, each one must define a value for these three properties.
+It's important to note that none of the RFC-defined members are required, but this library ensures that `type`, `status`, and `title` are all present within a problem instance.
 
 > The below definitions are based on the RFC, but may contain different links and slightly different verbiage.
 
@@ -173,7 +173,7 @@ type ProblemInstance = {
 `problem()` - Create a Problem Instance.
 ```ts
 /* At a minimum, an HTTP status must be passed in. */
-function problem(data: ProblemDetail & { status: number }): ProblemInstance
+function problem(status: number, data: ProblemDetail): ProblemInstance
 ```
 
 `json()` - Create a [Response](https://developer.mozilla.org/en-US/docs/Web/API/Response). This includes a `Content-Type` header set to `application/problem+json`, and also a `Content-Length` header.
@@ -181,8 +181,32 @@ function problem(data: ProblemDetail & { status: number }): ProblemInstance
 function json(data: ProblemInstance): Response
 ```
 
-`Problem` - Create a Problem factory. It's recommended to export `problem` from a file, where you can import it into other files to create instances. `errors` is of type `ProblemInstance[]`, and `title` is a `string`.
+`Problem` - Create a Problem factory. It's recommended to export `problem` from a file, where you can import it into other files to create instances.
 ```ts
-const problem = new Problem(errors)
+class Problem {
+  constructor(details: ProblemDetail<{ title: string; }>[])
+  create(title: string, detail?: ProblemDetail): ProblemInstance
+}
+
+const problems = [
+  {
+    status: 402,
+    type: "https://example.com/errors/lack-of-credit",
+    title: "LackOfCredit",
+    detail: "You do not have enough credit in your account."
+  },
+  {
+    status: 403,
+    type: "https://example.com/errors/unauthorized-account-access",
+    title: "UnauthorizedAccountAccess",
+    detail: "You do not have authorization to access this account."
+  },
+  {
+    status: 403,
+    title: "UnauthorizedCredit",
+    detail: "Credit authorization failed for payment method."
+  }
+]
+const problem = new Problem(problems)
 const instance = problem.create(title)
 ```
