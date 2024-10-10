@@ -30,7 +30,7 @@ declare module 'pijoy' {
    * 
    * Requires a `status` to be passed in.
    */
-  export function problem(data: ProblemDetail): ProblemInstance
+  export function problem(status: number, details: ProblemDetail): ProblemInstance
 
   /**
    * Create a Problem factory, from custom Problem Details.
@@ -38,7 +38,7 @@ declare module 'pijoy' {
    * Requires each Problem Detail to have a `title`.
    */
   export class Problem {
-    constructor(details: ProblemDetail<{ title: string; }>[])
-    create(title: string, detail?: ProblemDetail): ProblemInstance
+    constructor(problems: ProblemDetail<{ title: string; }>[])
+    create(title: string, details?: ProblemDetail): ProblemInstance
   }
 }

@@ -173,7 +173,7 @@ type ProblemInstance = {
 `problem()` - Create a Problem Instance.
 ```ts
 /* At a minimum, an HTTP status must be passed in. */
-function problem(status: number, data: ProblemDetail): ProblemInstance
+function problem(status: number, details: ProblemDetail): ProblemInstance
 ```
 
 `json()` - Create a [Response](https://developer.mozilla.org/en-US/docs/Web/API/Response). This includes a `Content-Type` header set to `application/problem+json`, and also a `Content-Length` header.
@@ -184,8 +184,8 @@ function json(data: ProblemInstance): Response
 `Problem` - Create a Problem factory. It's recommended to export `problem` from a file, where you can import it into other files to create instances.
 ```ts
 class Problem {
-  constructor(details: ProblemDetail<{ title: string; }>[])
-  create(title: string, detail?: ProblemDetail): ProblemInstance
+  constructor(problems: ProblemDetail<{ title: string; }>[])
+  create(title: string, details?: ProblemDetail): ProblemInstance
 }
 
 const problems = [

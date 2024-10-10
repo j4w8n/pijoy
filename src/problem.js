@@ -7,10 +7,10 @@ import { validate } from "./utils.js"
  * Requires a `status` to be passed in.
  * 
  * @param {number} status
- * @param {import("pijoy").ProblemDetail} [data] 
+ * @param {import("pijoy").ProblemDetail} [details] 
  * @returns {import("pijoy").ProblemInstance}
  */
-export const problem = (status, data) => {
+export const problem = (status, details) => {
   if (!status) 
     throw new SyntaxError('A status must be passed in to `problem`.')
   if (typeof status !== 'number') 
@@ -25,7 +25,7 @@ export const problem = (status, data) => {
     status,
     get type() { return error_instances.find(i => i.status === status)?.type ?? 'about:blank' },
     get title() { return error_instances.find(i => i.status === status)?.title ?? 'Unknown Error' },
-    ...data
+    ...details
   }
 
   return validate(problem_instance)
@@ -39,45 +39,45 @@ export const problem = (status, data) => {
 export class Problem {
   /**
    * 
-   * @param {import('pijoy').ProblemDetail[]} details
+   * @param {import('pijoy').ProblemDetail[]} problems
    */
-  constructor(details) {
-    if (!details)
+  constructor(problems) {
+    if (!problems)
       throw new SyntaxError('Expected 1 argument for `Problem`, but got 0.')
-    if (!Array.isArray(details))
+    if (!Array.isArray(problems))
       throw new TypeError('Details must be an array.')
-    if (details.length === 0)
+    if (problems.length === 0)
       throw new Error('Details array must have at least one element.')
-    if (!details.every(d => d.title))
+    if (!problems.every(p => p.title))
       throw new TypeError('All details must have a `title`.')
 
-    this.details = details
+    this.problems = problems
   }
 
   /**
    * Create a problem instance.
    * 
    * @param {string} title
-   * @param {import('pijoy').ProblemDetail} [data]
+   * @param {import('pijoy').ProblemDetail} [details]
    * @returns {import('pijoy').ProblemInstance}
    */
-  create(title, data) {
+  create(title, details) {
     if (typeof title !== 'string')
       throw new TypeError('Title must be a string.')
-    if (data && typeof data !== 'object')
-      throw new TypeError('Passed-in data must be an object.')
+    if (details && typeof details !== 'object')
+      throw new TypeError('Passed-in detail must be an object.')
 
-    const detail = this.details.find(d => d.title === title)
+    const problem = this.problems.find(p => p.title === title)
 
     /**
      * @type {import("pijoy").ProblemInstance}
      */
     const problem_instance = {
-      status: detail?.status ?? 400,
+      status: problem?.status ?? 400,
       get type() { return error_instances.find(i => i.status === this.status)?.type ?? 'about:blank' },
       title,
-      ...detail,
-      ...data
+      ...problem,
+      ...details
     }
 
     return validate(problem_instance)
