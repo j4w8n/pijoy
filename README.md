@@ -8,15 +8,15 @@ Pronounced "Pie Joy", the name is an acronym for _Problem Instance Javascript Ob
 
 - Easily create API error responses.
 - No need to come up with your own format.
-- Get started by just passing in an HTTP status code.
-- Customize with your own errors.
+- Get started by just passing in an HTTP status code or Error.
+- Customize with your own error instances.
 - Interoperability with other systems that use the standard.
 
 ## Definitions
 
 "problem details" - An RFC-defined JSON format that provides actionable information about errors returned from an API.
 
-"problem instance" - A specific instance of a problem detail, with a few guaranteed pieces of information.
+"problem instance" - A specific instance of a problem detail, guaranteed to have a `status`, `type`, and `title`.
 
 ## RFC Explainer
 
@@ -36,25 +36,26 @@ For example, consider a response indicating that the client's account doesn't ha
 
 ## Usage
 
-The defined [members](https://www.rfc-editor.org/rfc/rfc9457#name-members-of-a-problem-detail) of a problem detail are `type`, `status`, `title`, `detail`, and `instance`. The rest are [extension members](https://www.rfc-editor.org/rfc/rfc9457#name-extension-members), whose names you define.
+The defined [members](https://www.rfc-editor.org/rfc/rfc9457#name-members-of-a-problem-detail) of a problem detail are `status`, `type`, `title`, `detail`, and `instance`. The rest are [extension members](https://www.rfc-editor.org/rfc/rfc9457#name-extension-members), whose names you define.
 
 The Content-Type for responses must be `application/problem+json`; which is set in the pijoy `json` function, if you choose to use it.
 
-### Minimal Example
-Pijoy returns a problem instance based on the status code you pass in.
+### Status code example
+pijoy returns a problem instance based on the status code you pass in. Problem Details can be passed as a second argument.
 
 ```js
 import { pijoy, problem } from "pijoy"
 
 /* Create a Problem Instance. */
-const instance = pijoy(403)
+const instance = pijoy(402, { balance: 30 })
 
 /*
   instance:
   {
-    "status": 403,
-    "type": "https://www.rfc-editor.org/rfc/rfc9110#name-403-forbidden",
-    "title": "Forbidden"
+    status: 402,
+    type: "https://www.rfc-editor.org/rfc/rfc9110#name-403-forbidden",
+    title: "Forbidden",
+    balance: 30
   }
 */
 
@@ -62,11 +63,51 @@ const instance = pijoy(403)
 return problem(instance)
 ```
 
-### Example with custom errors
-Use your own errors, and we will match against them using the `title`. Therefore, the title of each must be unique across all errors.
+### Error example
+pijoy returns a problem instance based on the Error you pass in.
 
 ```js
-/* lib/errors.js */
+import { pijoy, problem } from "pijoy"
+
+class AuthError extends Error {
+  constructor(...args) {
+    super(...args)
+    this.name = 'AuthError'
+    this.details = {
+      status: 401
+    }
+  }
+}
+
+const someFunction = () => {
+  try {
+    ...
+    /* Something went wrong */
+    throw new AuthError('Login Failed')
+  } catch (err) {
+    const instance = pijoy(err, { instance: `${LOGS_ORIGIN}/audit/202410120023-0203.log` })
+    /*
+      instance:
+      {
+        status: 401,
+        type: "https://www.rfc-editor.org/rfc/rfc9110#name-401-unauthorized",
+        title: "AuthError",
+        detail: "Login Failed",
+        instance: 'https://site.example/logs/audit/202410120023-0203.log'
+      }
+    */
+
+    /* Return an 'application/problem+json' JSON response. */
+    return problem(instance)
+  }
+}
+```
+
+### Example with custom Problem Details
+Use your own problem details, and we will match against them using the `title`. Therefore, the title of each must be unique across all errors.
+
+```js
+/* lib/problems.js */
 import { Pijoy } from "pijoy"
 
 const problems = [
@@ -94,7 +135,7 @@ export const Problem = new Pijoy(problems)
 ```
 ```js
 /* API endpoint to purchase a product. */
-import { Problem } from "./lib/errors.js"
+import { Problem } from "./lib/problems.js"
 import { problem } from "pijoy"
 
 export const POST = async ({ request }) => {
@@ -102,7 +143,7 @@ export const POST = async ({ request }) => {
 
   if (error) {
     /* Assumes `error` has a `name` property that matches the `title` of a custom error above. e.g. LackOfCredit */
-    /* If passing in additional details (optional), you'll want to destucture the property that would be used for the value of `instance`, if it exists. */ 
+    /* If passing in additional details (optional), you'll want to destucture the property that would be used for the value of the `instance` member, if it exists and is not already named "instance". */ 
     const { name, audit_log_path, ...rest } = error
 
     const instance = Problem.create(name, {
@@ -117,13 +158,12 @@ export const POST = async ({ request }) => {
         "type": "https://example.com/errors/lack-of-credit",
         "title": "LackOfCredit",
         "detail": "You do not have enough credit in your account.",
-        "instance": "https://site.example/logs/audit/135082985",
+        "instance": "https://site.example/logs/audit/202410120023-0203.log",
         "balance": 30,
         "cost": 50,
         "accounts": [ "/account/12345", "/account/67890" ]
       }
     */
-
 
     /* Return an 'application/problem+json' JSON response. */
     return problem(instance)
@@ -135,7 +175,7 @@ export const POST = async ({ request }) => {
 
 ## Definitions and Types
 
-### Problem Detail Members
+### Problem Detail members
 
 It's important to note that none of the RFC-defined members are required, but this library ensures that `type`, `status`, and `title` are all present within a problem instance.
 
@@ -181,9 +221,10 @@ function problem(data: ProblemInstance): Response
 
 `pijoy()` - Create a Problem Instance.
 ```ts
-/* At a minimum, an HTTP status must be passed in. */
-function pijoy(status: number, details: ProblemDetail): ProblemInstance
+/* Either an HTTP status or Error must be passed in. Custom errors, extended from Error, can also be used. */
+function pijoy(arg: number | Error, details?: ProblemDetail): ProblemInstance
 ```
+> When passing in a custom Error, pijoy recognizes the properties `name`, `status`, `cause`, `code`, and `details` from the error, and reflects them in the problem instance. `name` is used for the `title` of the instance. `stack` is ignored.
 
 `Pijoy` - Create a Problem Instance factory. It's recommended to export `Problem` from a file, where you can import it into other files where you'll create problem instances (see real-world example further above).
 ```ts
