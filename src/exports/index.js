@@ -1,2 +1,2 @@
 export { problem } from '../helpers.js'
-export { pijoy, Pijoy } from '../problem.js'
+export { pijoy, Pijoy, pijoyFromError } from '../problem.js'

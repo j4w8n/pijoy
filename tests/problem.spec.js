@@ -1,5 +1,5 @@
 import { expect, test } from "vitest"
-import { pijoy, Pijoy } from "../src/problem.js"
+import { pijoy, Pijoy, pijoyFromError } from "../src/problem.js"
 
 test('Create problem instance from status', () => {
   expect(pijoy(400)).toStrictEqual(
@@ -77,7 +77,6 @@ test('Throw TypeError for `status` not being a number between 100 and 599', () =
 })
 
 /* Some property names intentially have single or double quotes. */
-
 const Problem = new Pijoy([
   {
     "status": 402,
@@ -161,4 +160,104 @@ test('Throw TypeError for `title` not being a string', () => {
 
 test('Throw TypeError for `details` not being an object', () => {
   expect(() => Problem.create('Error', 'Bad')).toThrowError('Passed-in details must be an object.')
+})
+
+class AuthError extends Error {
+  constructor(message, options) {
+    super(message, options)
+    this.name = 'AuthError'
+    this.details = {
+      status: 401
+    }
+  }
+}
+
+class StatusError extends Error {
+  constructor(message, options) {
+    super(message, options)
+    this.name = 'StatusError'
+    this.status = 400
+    this.code = 1269
+  }
+}
+
+class DefaultError extends Error {
+  constructor(message, options) {
+    super(message, options)
+  }
+}
+
+test('Throw DefaultError', () => {
+  const error = new DefaultError('Bad Deal')
+  expect(pijoyFromError(error)).toStrictEqual(
+    {
+      status: 400,
+      type: "https://www.rfc-editor.org/rfc/rfc9110#name-400-bad-request",
+      title: 'Error',
+      detail: 'Bad Deal',
+    }
+  )
+})
+
+test('Throw StatusError', () => {
+  const error = new StatusError('Status is bad')
+  expect(pijoyFromError(error)).toStrictEqual(
+    {
+      status: 400,
+      type: "https://www.rfc-editor.org/rfc/rfc9110#name-400-bad-request",
+      title: 'StatusError',
+      detail: 'Status is bad',
+      code: 1269
+    }
+  )
+})
+
+test('Throw AuthError', () => {
+  const error = new AuthError('Session Missing')
+  expect(pijoyFromError(error)).toStrictEqual(
+    {
+      status: 401,
+      type: "https://www.rfc-editor.org/rfc/rfc9110#name-401-unauthorized",
+      title: 'AuthError',
+      detail: 'Session Missing'
+    }
+  )
+})
+
+test('Throw AuthError with details', () => {
+  const error = new AuthError('Session Missing')
+  expect(pijoyFromError(error, { balance: 30 })).toStrictEqual(
+    {
+      status: 401,
+      type: "https://www.rfc-editor.org/rfc/rfc9110#name-401-unauthorized",
+      title: 'AuthError',
+      detail: 'Session Missing',
+      balance: 30
+    }
+  )
+})
+
+test('Throw AuthError with overriding details', () => {
+  const error = new AuthError('Session Missing')
+  expect(pijoyFromError(error, { status: 403 })).toStrictEqual(
+    {
+      status: 403,
+      type: "https://www.rfc-editor.org/rfc/rfc9110#name-403-forbidden",
+      title: 'AuthError',
+      detail: 'Session Missing'
+    }
+  )
+})
+
+test('Throw AuthError with cause', () => {
+  const error = new AuthError('Session Missing', { cause: 'Example Cause' })
+  expect(pijoyFromError(error)).toStrictEqual(
+    {
+      status: 401,
+      type: "https://www.rfc-editor.org/rfc/rfc9110#name-401-unauthorized",
+      title: 'AuthError',
+      detail: 'Session Missing',
+      cause: new Error('Example Cause')
+    }
+  )
 })

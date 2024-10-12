@@ -17,6 +17,12 @@ declare module 'pijoy' {
     [key: string]: any;
   } & T
 
+  export type StickyProblemDetail = {
+    status?: number;
+    type?: string;
+    title?: string;
+  }
+
   /**
    * Create a JSON `Response` using the Fetch API `Response.json()` static method.
    * Use `Response()` as a fallback.
@@ -41,4 +47,9 @@ declare module 'pijoy' {
     constructor(problems: ProblemDetail<{ title: string; }>[])
     create(title: string, details?: ProblemDetail): ProblemInstance
   }
+
+  /**
+   * Create a Problem Instance from an Error.
+   */
+  export function pijoyFromError(error: unknown, details?: ProblemDetail): ProblemInstance
 }

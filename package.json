@@ -27,5 +27,8 @@
     "test": "vitest"
   },
   "type": "module",
-  "types": "types/indes.d.ts"
+  "types": "types/indes.d.ts",
+  "dependencies": {
+    "normalize-exception": "^4.0.0"
+  }
 }
