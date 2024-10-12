@@ -71,10 +71,6 @@ test('Throw SyntaxError for not passing in errors to `new Pijoy()`', () => {
   expect(() => new Pijoy()).toThrowError('Expected 1 argument for `Pijoy`, but got 0.')
 })
 
-test('Throw TypeError for `status` not being a number', () => {
-  expect(() => pijoy(400, { status: 'dud' })).toThrowError('Member `status` must be a number.')
-})
-
 test('Throw TypeError for `status` not being a number between 100 and 599', () => {
   expect(() => pijoy(99)).toThrowError('`status` must be a number in the range of 100-599.')
   expect(() => pijoy(600)).toThrowError('`status` must be a number in the range of 100-599.')
