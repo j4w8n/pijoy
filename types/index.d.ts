@@ -32,11 +32,9 @@ declare module 'pijoy' {
   export function problem(data: ProblemInstance, init?: ResponseInit): Response
 
   /**
-   * Create a Problem Instance from Problem Detail.
-   * 
-   * Requires a `status` to be passed in.
+   * Create a Problem Instance from a status code or Error.
    */
-  export function pijoy(status: number, details: ProblemDetail): ProblemInstance
+  export function pijoy(arg: number | Error, details: ProblemDetail): ProblemInstance
 
   /**
    * Create a Problem factory, from custom Problem Details.
@@ -47,9 +45,4 @@ declare module 'pijoy' {
     constructor(problems: ProblemDetail<{ title: string; }>[])
     create(title: string, details?: ProblemDetail): ProblemInstance
   }
-
-  /**
-   * Create a Problem Instance from an Error.
-   */
-  export function pijoyFromError(error: unknown, details?: ProblemDetail): ProblemInstance
 }

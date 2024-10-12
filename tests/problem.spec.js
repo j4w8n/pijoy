@@ -1,5 +1,5 @@
 import { expect, test } from "vitest"
-import { pijoy, Pijoy, pijoyFromError } from "../src/problem.js"
+import { pijoy, Pijoy } from "../src/problem.js"
 
 test('Create problem instance from status', () => {
   expect(pijoy(400)).toStrictEqual(
@@ -60,7 +60,11 @@ test('Create problem instances from json', () => {
 })
 
 test('Throw SyntaxError for not passing in an argument to `pijoy()`', () => {
-  expect(() => pijoy()).toThrowError('A status must be passed in to `pijoy`.')
+  expect(() => pijoy()).toThrowError('A status or Error must be passed in to `pijoy`.')
+})
+
+test('Throw SyntaxError for `pijoy` argument being neither a number or Error', () => {
+  expect(() => pijoy('hello')).toThrowError('Passed argument to `pijoy` is neither a status or Error.')
 })
 
 test('Throw SyntaxError for not passing in errors to `new Pijoy()`', () => {
@@ -68,12 +72,12 @@ test('Throw SyntaxError for not passing in errors to `new Pijoy()`', () => {
 })
 
 test('Throw TypeError for `status` not being a number', () => {
-  expect(() => pijoy({ status: 'dud' })).toThrowError('Member `status` must be a number.')
+  expect(() => pijoy(400, { status: 'dud' })).toThrowError('Member `status` must be a number.')
 })
 
 test('Throw TypeError for `status` not being a number between 100 and 599', () => {
-  expect(() => pijoy(99)).toThrowError('Member `status` must be a number in the range of 100-599.')
-  expect(() => pijoy(600)).toThrowError('Member `status` must be a number in the range of 100-599.')
+  expect(() => pijoy(99)).toThrowError('`status` must be a number in the range of 100-599.')
+  expect(() => pijoy(600)).toThrowError('`status` must be a number in the range of 100-599.')
 })
 
 /* Some property names intentially have single or double quotes. */
@@ -189,7 +193,7 @@ class DefaultError extends Error {
 
 test('Throw DefaultError', () => {
   const error = new DefaultError('Bad Deal')
-  expect(pijoyFromError(error)).toStrictEqual(
+  expect(pijoy(error)).toStrictEqual(
     {
       status: 400,
       type: "https://www.rfc-editor.org/rfc/rfc9110#name-400-bad-request",
@@ -201,7 +205,7 @@ test('Throw DefaultError', () => {
 
 test('Throw StatusError', () => {
   const error = new StatusError('Status is bad')
-  expect(pijoyFromError(error)).toStrictEqual(
+  expect(pijoy(error)).toStrictEqual(
     {
       status: 400,
       type: "https://www.rfc-editor.org/rfc/rfc9110#name-400-bad-request",
@@ -214,7 +218,7 @@ test('Throw StatusError', () => {
 
 test('Throw AuthError', () => {
   const error = new AuthError('Session Missing')
-  expect(pijoyFromError(error)).toStrictEqual(
+  expect(pijoy(error)).toStrictEqual(
     {
       status: 401,
       type: "https://www.rfc-editor.org/rfc/rfc9110#name-401-unauthorized",
@@ -226,7 +230,7 @@ test('Throw AuthError', () => {
 
 test('Throw AuthError with details', () => {
   const error = new AuthError('Session Missing')
-  expect(pijoyFromError(error, { balance: 30 })).toStrictEqual(
+  expect(pijoy(error, { balance: 30 })).toStrictEqual(
     {
       status: 401,
       type: "https://www.rfc-editor.org/rfc/rfc9110#name-401-unauthorized",
@@ -239,7 +243,7 @@ test('Throw AuthError with details', () => {
 
 test('Throw AuthError with overriding details', () => {
   const error = new AuthError('Session Missing')
-  expect(pijoyFromError(error, { status: 403 })).toStrictEqual(
+  expect(pijoy(error, { status: 403 })).toStrictEqual(
     {
       status: 403,
       type: "https://www.rfc-editor.org/rfc/rfc9110#name-403-forbidden",
@@ -251,7 +255,7 @@ test('Throw AuthError with overriding details', () => {
 
 test('Throw AuthError with cause', () => {
   const error = new AuthError('Session Missing', { cause: 'Example Cause' })
-  expect(pijoyFromError(error)).toStrictEqual(
+  expect(pijoy(error)).toStrictEqual(
     {
       status: 401,
       type: "https://www.rfc-editor.org/rfc/rfc9110#name-401-unauthorized",

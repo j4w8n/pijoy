@@ -3,33 +3,56 @@ import { error_instances } from "./instances.js"
 import { validate } from "./utils.js"
 
 /**
- * Create a Problem Instance from Problem Detail.
+ * Create a Problem Instance from a status code or Error.
  * 
- * Requires a `status` to be passed in.
- * 
- * @param {number} status
+ * @param {number | Error} arg
  * @param {import("pijoy").ProblemDetail} [details] 
  * @returns {import("pijoy").ProblemInstance}
  */
-export const pijoy = (status, details) => {
-  if (!status) 
-    throw new SyntaxError('A status must be passed in to `pijoy`.')
-  if (typeof status !== 'number') 
-    throw new TypeError('Member `status` must be a number.')
-  if (status && (status < 100 || status > 599)) 
-    throw new TypeError('Member `status` must be a number in the range of 100-599.')
+export const pijoy = (arg, details) => {
+  if (!arg) 
+    throw new SyntaxError('A status or Error must be passed in to `pijoy`.')
 
-  /**
-   * @type {import("pijoy").ProblemInstance}
-   */
-  const problem_instance = {
-    status,
-    get type() { return error_instances.find(i => i.status === status)?.type ?? 'about:blank' },
-    get title() { return error_instances.find(i => i.status === status)?.title ?? 'Unknown Error' },
-    ...details
+  if (typeof arg === 'number') {
+    if (arg < 100 || arg > 599)
+      throw new TypeError('`status` must be a number in the range of 100-599.')
+
+    /**
+     * @type {import("pijoy").ProblemInstance}
+     */
+    const problem_instance = {
+      status: arg,
+      get type() { return error_instances.find(i => i.status === arg)?.type ?? 'about:blank' },
+      get title() { return error_instances.find(i => i.status === arg)?.title ?? 'Unknown Error' },
+      ...details
+    }
+
+    return validate(problem_instance)
+  } else if (arg instanceof Error) {
+    /**
+     * @type {{ name: string, message: string, cause?: unknown, stack?: string } & 
+     * { status?: number, code?: number, details?: import("pijoy").StickyProblemDetail } }
+      */
+    const { name, message, cause, stack, ...rest } = normalizeException(arg)
+  
+    /**
+      * @type {import("pijoy").ProblemInstance}
+      */
+    const problem_instance = {
+      status: rest.status ?? rest.details?.status ?? details?.status ?? 400,
+      get type() { return rest.details?.type ?? details?.type ?? error_instances.find(i => i.status === this.status)?.type ?? 'about:blank' },
+      get title() { return name ?? details?.title ?? error_instances.find(i => i.status === this.status)?.title ?? 'Unknown Error' },
+      detail: message,
+      cause,
+      code: rest.code,
+      ...rest.details,
+      ...details
+    }
+  
+    return validate(problem_instance)
+  } else {
+    throw new SyntaxError('Passed argument to `pijoy` is neither a status or Error.')
   }
-
-  return validate(problem_instance)
 }
 
 /**
@@ -83,38 +106,4 @@ export class Pijoy {
 
     return validate(problem_instance)
   }
-}
-
-/**
- * Create a Problem Instance from an Error.
- * 
- * @param {any} error
- * @param {import("pijoy").ProblemDetail} [details] 
- * @returns {import("pijoy").ProblemInstance}
- */
-export const pijoyFromError = (error, details) => {
-  if (!error) 
-    throw new SyntaxError('An error must be passed into `pijoyError`.')
-
-  /**
-   * @type {{ name: string, message: string, cause?: unknown, stack?: string } & 
-   * { status?: number, code?: number, details?: import("pijoy").StickyProblemDetail } }
-   */
-  const { name, message, cause, stack, ...rest } = normalizeException(error)
-
-  /**
-   * @type {import("pijoy").ProblemInstance}
-   */
-  const problem_instance = {
-    status: rest.status ?? rest.details?.status ?? details?.status ?? 400,
-    get type() { return rest.details?.type ?? details?.type ?? error_instances.find(i => i.status === this.status)?.type ?? 'about:blank' },
-    get title() { return name ?? details?.title ?? error_instances.find(i => i.status === this.status)?.title ?? 'Unknown Error' },
-    detail: message,
-    cause,
-    code: rest.code,
-    ...rest.details,
-    ...details
-  }
-
-  return validate(problem_instance)
 }
