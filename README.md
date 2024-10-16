@@ -38,7 +38,7 @@ For example, consider a response indicating that the client's account doesn't ha
 
 The defined [members](https://www.rfc-editor.org/rfc/rfc9457#name-members-of-a-problem-detail) of a problem detail are `status`, `type`, `title`, `detail`, and `instance`. The rest are [extension members](https://www.rfc-editor.org/rfc/rfc9457#name-extension-members), whose names you define.
 
-The Content-Type for responses must be `application/problem+json`; which is set in the pijoy `json` function, if you choose to use it.
+The Content-Type for responses must be `application/problem+json`; which is set in the pijoy `problem` function, if you choose to use it.
 
 ### Status code example
 pijoy returns a problem instance based on the status code you pass in. Problem Details can be passed as a second argument.
