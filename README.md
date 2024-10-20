@@ -53,8 +53,8 @@ const instance = pijoy(402, { balance: 30 })
   instance:
   {
     status: 402,
-    type: "https://www.rfc-editor.org/rfc/rfc9110#name-403-forbidden",
-    title: "Forbidden",
+    type: "https://www.rfc-editor.org/rfc/rfc9110#name-402-payment-required",
+    title: "Payment Required",
     balance: 30
   }
 */
